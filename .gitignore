@@ -1,0 +1,11 @@
+# nand2tetris test files #
+##########################
+*.zip
+*.out
+*.dat
+
+# nand2tetris demo folders #
+############################
+00/
+demo/
+tools/
