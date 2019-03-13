@@ -61,6 +61,13 @@ CHIP ALU {
    
    //Selet the output
    Not16(in=intout, out=notout);
-   Mux16(a=intout, b=notout, sel=no, out=out);
+   Mux16(a=intout, b=notout, sel=no, out[15]=ng, out[0..7]=lsb, out[8..15]=msb, out=out);
+   
+   // Status
+   // ZR
+   Or8Way(in=lsb, out=lsb1bit);
+   Or8Way(in=msb, out=msb1bit);
+   Or(a=lsb1bit, b=msb1bit, out=aluzero);
+   Not(in=aluzero, out=zr);
    
 }
