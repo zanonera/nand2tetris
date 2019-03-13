@@ -43,4 +43,24 @@ CHIP ALU {
 
     PARTS:
    // Put you code here:
+   
+   // Select if the input will be zeroed
+   Mux16(a=x, b=false, sel=zx, out=xorzero);
+   Mux16(a=y, b=false, sel=zy, out=yorzero);
+   
+   // Select if the input will be inverted
+   Not16(in=xorzero, out=notx);
+   Not16(in=yorzero, out=noty);
+   Mux16(a=xorzero, b=notx, sel=nx, out=xout);
+   Mux16(a=yorzero, b=noty, sel=ny, out=yout);
+   
+   // Operations
+   And16(a=xout, b=yout, out=and);
+   Add16(a=xout, b=yout, out=sum);
+   Mux16(a=and, b=sum, sel=f, out=intout);
+   
+   //Selet the output
+   Not16(in=intout, out=notout);
+   Mux16(a=intout, b=notout, sel=no, out=out);
+   
 }
