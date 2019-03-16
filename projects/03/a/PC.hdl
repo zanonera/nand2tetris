@@ -17,4 +17,19 @@ CHIP PC {
 
     PARTS:
     // Put your code here:
+	// Increments the output
+	Inc16(in=fdbk ,out=outplus1);
+	
+	//Select if the output will be the incremented or not
+	Mux16(a=fdbk, b=outplus1, sel=inc, out=outorinc);
+	
+	//Select if the output of PC will be from "in" or "out"
+	Mux16(a=outorinc, b=in, sel=load, out=inorout);
+	
+	// Select if the output should be reseted or not
+	Mux16(a=inorout, b=false, sel=reset, out=inorzero);
+	
+	// Register the output
+	Register(in=inorzero ,load=true , out=fdbk, out=out);
+	
 }
