@@ -16,4 +16,56 @@ CHIP RAM64 {
 
     PARTS:
     // Put your code here:
+	// Negate the first three MSBs of the addresses
+	Not(in=address[3], out=notaddr3);
+	Not(in=address[4], out=notaddr4);
+	Not(in=address[5], out=notaddr5);
+	// Decoder for the MSB´s of the addresses using And logic
+	// Uses the MSB's to select which of the RAM8 will be used to load the input
+	// This circuitry is the same implementation of the DMux8Way!
+	// 000 is load1
+	And(a=notaddr3, b=notaddr4, out=al1);
+	And(a=al1, b=notaddr5, out=al11);
+	And(a=load, b=al11, out=load1);
+	// 001 is load2
+	And(a=address[3], b=notaddr4, out=al2);
+	And(a=al2, b=notaddr5, out=al22);
+	And(a=load, b=al22, out=load2);
+	// 010 is load3
+	And(a=notaddr3, b=address[4], out=al3);
+	And(a=al3, b=notaddr5, out=al33);
+	And(a=load, b=al33, out=load3);
+	// 011 is load4
+	And(a=address[3], b=address[4], out=al4);
+	And(a=al4, b=notaddr5, out=al44);
+	And(a=load, b=al44, out=load4);
+	// 100 is load5
+	And(a=notaddr3, b=notaddr4, out=al5);
+	And(a=al5, b=address[5], out=al55);
+	And(a=load, b=al55, out=load5);
+	// 101 is load6
+	And(a=address[3], b=notaddr4, out=al6);
+	And(a=al6, b=address[5], out=al66);
+	And(a=load, b=al66, out=load6);
+	// 110 is load7
+	And(a=notaddr3, b=address[4], out=al7);
+	And(a=al7, b=address[5], out=al77);
+	And(a=load, b=al77, out=load7);
+	// 111 is load8
+	And(a=address[3], b=address[4], out=al8);
+	And(a=al8, b=address[5], out=al88);
+	And(a=load, b=al88, out=load8);
+	
+	// 8x RAM8
+	RAM8(in=in ,load=load1 ,address=address[0..2] ,out=out1);
+	RAM8(in=in ,load=load2 ,address=address[0..2] ,out=out2);
+	RAM8(in=in ,load=load3 ,address=address[0..2] ,out=out3);
+	RAM8(in=in ,load=load4 ,address=address[0..2] ,out=out4);
+	RAM8(in=in ,load=load5 ,address=address[0..2] ,out=out5);
+	RAM8(in=in ,load=load6 ,address=address[0..2] ,out=out6);
+	RAM8(in=in ,load=load7 ,address=address[0..2] ,out=out7);
+	RAM8(in=in ,load=load8 ,address=address[0..2] ,out=out8);
+	
+	// Selects the correct output using the 3 MSBs
+	Mux8Way16(a=out1 ,b=out2 ,c=out3 ,d=out4 ,e=out5 ,f=out6 ,g=out7 ,h=out8 ,sel=address[3..5] ,out=out);
 }
