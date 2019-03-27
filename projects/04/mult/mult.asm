@@ -24,6 +24,28 @@
 	D=M		// D=RAM[1]
 	@END
 	D;JEQ	// If R1=0 goto END
+
+//Clear the loop counter variable
+	@i
+	M=0
+	
+(LOOP)
+	@i
+	D=M
+	@R0
+	D=D-M
+	@END
+	D;JEQ // if i == R0 goto END
+	@R1
+	D=M
+	@R2
+	D=D+M
+	@R2
+	M=D // R2 = R2 + R1
+	@i
+	M=M+1 // i = i + 1
+	@LOOP
+	0;JMP
 	
 (END)
 	@END
