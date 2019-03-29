@@ -40,4 +40,15 @@ CHIP CPU {
 
     PARTS:
     // Put your code here:
+	
+	ALU(x=toALUx ,y=toALUy ,zx=instruction[11] ,nx=instruction[10] ,zy=instruction[9] ,ny=instruction[8] ,f=instruction[7] ,no=instruction[6] ,out=outM, out=aluFdbck ,zr= ,ng= );
+	
+	ARegister(in=toAreg ,load= ,out=AtoMux, out=AtoPC, out[0..14]=addressM);
+	DRegister(in=aluFdbck ,load= ,out=toALUx);
+	
+	Mux16(a=instruction ,b=aluFdbck ,sel= ,out=toAreg);
+	Mux16(a=AtoMux ,b=inM ,sel= ,out=toALUy);
+	
+	PC(in=AtoPC ,load= ,inc= ,reset=reset ,out=pc);
+
 }

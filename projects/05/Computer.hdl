@@ -20,4 +20,8 @@ CHIP Computer {
 
     PARTS:
     // Put your code here:
+	// Design as figure 5.9 of book´s Chapter 5
+	ROM32K(address=instrAddr ,out=instr);
+	CPU(inM=dataOutRam ,instruction=instr ,reset=reset ,outM=dataInRam ,writeM=we ,addressM=ramaddr ,pc=instrAddr );
+	RAM16K(in=dataInRam ,load=we ,address=ramaddr ,out=dataOutRam );
 }
