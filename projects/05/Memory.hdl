@@ -22,10 +22,31 @@
  * Screen and Keyboard chip specifications given in the book.
  */
 
+/*
+RAM - 0x0000 -> 0b_000_0000_0000_0000
+	  0x3999 -> 0b‭‭_011_1111_1111_1111‬
+SCR - 0x4000 -> 0b_‭100_0000_0000_0000‬
+	  0x5FFF -> 0b_‭101_1111_1111_1111‬
+KBD - 0x6000 -> 0b_‭110_0000_0000_0000‬
+*/ 
+ 
 CHIP Memory {
     IN in[16], load, address[15];
     OUT out[16];
 
     PARTS:
     // Put your code here:
+	// Create a load signal for RAM
+	Not(in=address[14], out=notPTB);
+	And(a=notPTB, b=load, out=loadRAM);
+	// Create a load signal for Screen
+	Not(in=address[13], out=notPT);
+	And(a=notPT, b=address[14], out=quaseSCREEN);
+	And(a=quaseSCREEN, b=load, out=loadSCREEN);
+	// The Hack memory map -> 1x16kb, 1x8kb & 1 16bit register
+	RAM16K(in=in ,load=loadRAM ,address=address[0..13] ,out=RAMout);
+	Screen(in=in ,load=loadSCREEN ,address=address[0..12] ,out=ScreenOUT);
+	Keyboard(out=KeyboardOUT);
+	// Selects the correct output using the 2 MSBs
+	Mux4Way16(a=RAMout ,b=RAMout ,c=ScreenOUT ,d=KeyboardOUT ,sel=address[13..14] ,out=out);
 }
