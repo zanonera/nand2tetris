@@ -41,14 +41,55 @@ CHIP CPU {
     PARTS:
     // Put your code here:
 	
-	ALU(x=toALUx ,y=toALUy ,zx=instruction[11] ,nx=instruction[10] ,zy=instruction[9] ,ny=instruction[8] ,f=instruction[7] ,no=instruction[6] ,out=outM, out=aluFdbck ,zr= ,ng= );
+	ALU(x=toALUx ,y=toALUy ,zx=instruction[11] ,nx=instruction[10] ,zy=instruction[9] ,ny=instruction[8] ,f=instruction[7] ,no=instruction[6] ,out=outM, out=aluFdbck ,zr=zeroALU ,ng=negALU);
 	
-	ARegister(in=toAreg ,load= ,out=AtoMux, out=AtoPC, out[0..14]=addressM);
-	DRegister(in=aluFdbck ,load= ,out=toALUx);
 	
-	Mux16(a=instruction ,b=aluFdbck ,sel= ,out=toAreg);
-	Mux16(a=AtoMux ,b=inM ,sel= ,out=toALUy);
+	// Load to register A
+	Not(in=instruction[15], out=opcodeA);
+	Or(a=instruction[5], b=opcodeA, out=loadA);
 	
-	PC(in=AtoPC ,load= ,inc= ,reset=reset ,out=pc);
+	// Load to register D
+	And(a=instruction[15], b=instruction[4], out=loadD);
 
+	ARegister(in=toAreg ,load=loadA ,out=AtoMux, out=AtoPC, out[0..14]=addressM);
+	DRegister(in=aluFdbck ,load=loadD ,out=toALUx);
+	
+	Mux16(a=instruction ,b=aluFdbck ,sel=instruction[15] ,out=toAreg);
+	Mux16(a=AtoMux ,b=inM ,sel=instruction[12] ,out=toALUy);
+	
+	// Jump decoder
+	// Jump when JMP is selected -> sel=111
+	DMux8Way(in=true ,sel=instruction[0..2] ,a=pcInc ,b=JGT ,c=JEQ ,d=JGE ,e=JLT ,f=JNE ,g=JLE ,h=JMP);
+	//Jump if: Greater than zero
+	Not(in=negALU, out=notNeg);
+	And(a=JGT, b=notNeg, out=noNeg);
+	And(a=noNeg, b=notZero, out=jump1);
+	// Jump if: Equals to zero
+	And(a=JEQ, b=zeroALU, out=jump2);
+	//Jump if: Greater or equals to zero
+	Or(a=zeroALU, b=notNeg, out=ge);
+	And(a=JGE, b=ge, out=jump3);
+	// Jump if: Bellow zero
+	And(a=JLT, b=negALU, out=jump4);
+	// Jump if: Not zero
+	Not(in=zeroALU, out=notZero);
+	And(a=JNE, b=notZero, out=jump5);
+	// Jump if: Less or equal to zero
+	Or(a=zeroALU, b=negALU, out=le);
+	And(a=JLE, b=le, out=jump6);
+	Or8Way(in[0]=false, in[1]=jump1, in[2]=jump2, in[3]=jump3, in[4]=jump4, in[5]=jump5, in[6]=jump6, in[7]=JMP ,out=jumpor);
+	// Only jumps when its a C instruction
+	And(a=jumpor, b=instruction[15], out=jump);
+	
+	PC(in=AtoPC ,load=jump ,inc=true ,reset=reset ,out[0..14]=pc);
+	
+	// Only writes  to data memory when the instruction is of C type
+	And(a=instruction[15], b=instruction[3], out=writeM);
 }
+
+/*
+C instruction
+1 X X a c1 c2 c3 c4 c5 c6 d1 d2 d3 j1 j2 j3
+A instruction
+0 15_bit_value
+*/
