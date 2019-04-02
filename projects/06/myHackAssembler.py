@@ -89,12 +89,11 @@ def main(argv):
                fileOut.write('0'+bin(decimal)[2:].zfill(15)+'\n')
             else:
                fileOut.write(curline)
+      fileIn.close()
+      fileOut.close()
    else:
       print("You should specify at least a input file, like:")
       print('# main.py -i <inputfile.asm>')
-   
-   fileIn.close()
-   fileOut.close()
-   
+     
 if __name__ == "__main__":
    main(sys.argv[1:])
