@@ -46,6 +46,13 @@ def is_address(s):
     # return true if a line starts with @
     return s.startswith('@') 
 
+def is_loop(s):
+    """ function to check if a is a
+        label declaration (looping)
+    """
+    # return true if a line starts with (
+    return s.startswith('(')     
+    
 def is_decimal(s):
     """ function to check if a line contains
         a decimal value
@@ -85,29 +92,56 @@ def main(argv):
    if outputfile:
       fileOut=open(outputfile,"w+")
    
+   ##First pass loop to find and create the labels declaration in the dictionary, for the second pass loop ex. (LOOP)
    linha = 0
-   varBaseAddress = 16  ##base address to start attributing to variables
    if inputfile:
       with open(inputfile,'r') as fileIn:
          for curline in fileIn:
-            linha += 1                             ##takes care of the current line count. to translate labels
             curline = rm_space(curline)            ##remove leading white space at current line
             curline = rm_inline_comment(curline)   ##remove in line comments at current line
             if is_comment(curline):
                continue
             elif is_space(curline):
                continue   
+            elif is_loop(curline):                 ##commands starting with ( (LABELS)
+               curline = curline.strip()           ##remove all linespace in line
+               curline = curline.strip('()')
+               if curline not in hackSymbols:      ##symbols in hack language
+                  hackSymbols[curline]=linha
+                  print(curline)
+                  print(linha)                     
+            else:
+               linha+=1                            ##just count actual code lines
+      fileIn.close()
+   else:
+      print("You should specify at least a input file, like:")
+      print('# main.py -i <inputfile.asm>')
+   
+   ##Second pass loop to decode the A instructions,C instructions, variables and labels
+   varBaseAddress = 16  ##base address to start attributing to variables
+   if inputfile:
+      with open(inputfile,'r') as fileIn:
+         for curline in fileIn:
+            curline = rm_space(curline)            ##remove leading white space at current line
+            curline = rm_inline_comment(curline)   ##remove in line comments at current line
+            if is_comment(curline):
+               continue
+            elif is_space(curline):
+               continue
+            elif is_loop(curline):
+               continue
             elif is_address(curline):              ##commands starting with @ (var, A and labels)
                curline = curline.strip('@')
+               curline = curline.strip('()')
                curline = curline.strip()           ##remove all linespace in line
                if is_decimal(curline):
                   decimal=int(curline)
                   fileOut.write('0'+bin(decimal)[2:].zfill(15)+'\n')
-               else:                               ##symbols
-                  if curline in hackSymbols:
+               else:                               
+                  if curline in hackSymbols:       ##symbols in hack language
                      decimal=hackSymbols[curline]
                      fileOut.write('0'+bin(decimal)[2:].zfill(15)+'\n')
-                  else:
+                  else:                            ##variables
                      hackSymbols[curline]=varBaseAddress
                      varBaseAddress+=1
                      decimal=hackSymbols[curline]
