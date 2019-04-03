@@ -1,6 +1,12 @@
 from itertools import dropwhile
 import sys, getopt, os
 
+hackSymbols = {
+"R0":0,"R1":1,"R2":2,"R3":3,"R4":4,"R5":5,"R6":6,"R7":7,"R8":8,
+"R9":9,"R10":10,"R11":11,"R12":12,"R13":13,"R14":14,"R15":15,
+"SCREEN":16384, "KBD":24576,"SP":0,"LCL":1,"ARG":2,"THIS":3,"THAT":4
+}
+
 def rm_inline_comment(s):
     """ function to remove all the
         double slash inline comment
@@ -39,6 +45,13 @@ def is_address(s):
     """
     # return true if a line starts with @
     return s.startswith('@') 
+
+def is_decimal(s):
+    """ function to check if a line contains
+        a decimal value
+    """
+    # return true if a line contains decimal
+    return s.isnumeric() 
     
 def main(argv):
    inputfile = ''
@@ -85,8 +98,14 @@ def main(argv):
             elif is_space(curline):
                continue   
             elif is_address(curline):
-               decimal=int(curline.strip('@'))
-               fileOut.write('0'+bin(decimal)[2:].zfill(15)+'\n')
+               curline = curline.strip('@')
+               curline = curline.strip()           ##remove all linespace in line
+               if is_decimal(curline):
+                  decimal=int(curline)
+                  fileOut.write('0'+bin(decimal)[2:].zfill(15)+'\n')
+               else:
+                  decimal=hackSymbols[curline]
+                  fileOut.write('0'+bin(decimal)[2:].zfill(15)+'\n')
             else:
                fileOut.write(curline)
       fileIn.close()
