@@ -107,9 +107,7 @@ def main(argv):
                curline = curline.strip()           ##remove all linespace in line
                curline = curline.strip('()')
                if curline not in hackSymbols:      ##symbols in hack language
-                  hackSymbols[curline]=linha
-                  print(curline)
-                  print(linha)                     
+                  hackSymbols[curline]=linha                     
             else:
                linha+=1                            ##just count actual code lines
       fileIn.close()
