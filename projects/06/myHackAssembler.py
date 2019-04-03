@@ -85,8 +85,8 @@ def main(argv):
    if outputfile:
       fileOut=open(outputfile,"w+")
    
-   # Ignore the comments with double slash and whitespace lines
    linha = 0
+   varBaseAddress = 16  ##base address to start attributing to variables
    if inputfile:
       with open(inputfile,'r') as fileIn:
          for curline in fileIn:
@@ -97,15 +97,21 @@ def main(argv):
                continue
             elif is_space(curline):
                continue   
-            elif is_address(curline):
+            elif is_address(curline):              ##commands starting with @ (var, A and labels)
                curline = curline.strip('@')
                curline = curline.strip()           ##remove all linespace in line
                if is_decimal(curline):
                   decimal=int(curline)
                   fileOut.write('0'+bin(decimal)[2:].zfill(15)+'\n')
-               else:
-                  decimal=hackSymbols[curline]
-                  fileOut.write('0'+bin(decimal)[2:].zfill(15)+'\n')
+               else:                               ##symbols
+                  if curline in hackSymbols:
+                     decimal=hackSymbols[curline]
+                     fileOut.write('0'+bin(decimal)[2:].zfill(15)+'\n')
+                  else:
+                     hackSymbols[curline]=varBaseAddress
+                     varBaseAddress+=1
+                     decimal=hackSymbols[curline]
+                     fileOut.write('0'+bin(decimal)[2:].zfill(15)+'\n')
             else:
                fileOut.write(curline)
       fileIn.close()
