@@ -1,11 +1,48 @@
 from itertools import dropwhile
 import sys, getopt, os
+import re 
 
+#Hack language specification: symbols
 hackSymbols = {
 "R0":0,"R1":1,"R2":2,"R3":3,"R4":4,"R5":5,"R6":6,"R7":7,"R8":8,
 "R9":9,"R10":10,"R11":11,"R12":12,"R13":13,"R14":14,"R15":15,
 "SCREEN":16384, "KBD":24576,"SP":0,"LCL":1,"ARG":2,"THIS":3,"THAT":4
 }
+
+#Hack language specification: C-instruction
+# dest = comp ; jmp
+Cdest = {'000':'000',"M":"001","D":"010","MD":"011","A":"100","AM":"101","AD":"110","AMD":"111"}
+Ccomp = {#a=0
+"0":"0101010",
+"1":"0111111",
+"-1":"0111010",
+"D":"0001100",
+"A":"0110000",
+"!D":"0001101",
+"!A":"0110001",
+"-D":"0001111",
+"-A":"0110011",
+"D+1":"0011111",
+"A+1":"0110111",
+"D-1":"0001110",
+"A-1":"0110010",
+"D+A":"0000010",
+"D-A":"0010011",
+"A-D":"0000111",
+"D&A":"0000000",
+"D|A":"0010101",
+#a=1
+"M":"1110000",
+"!M":"1110001",
+"-M":"1110011",
+"M+1":"1110111",
+"M-1":"1110010",
+"D+M":"1000010",
+"D-M":"1010011",
+"M-D":"1000111",
+"D&M":"1000000",
+"D|M":"1010101"}
+Cjmp = {'000':'000',"JGT":"001","JEQ":"010","JGE":"011","JLT":"100","JNE":"101","JLE":"110","JMP":"111"}
 
 def rm_inline_comment(s):
     """ function to remove all the
@@ -145,9 +182,28 @@ def main(argv):
                      decimal=hackSymbols[curline]
                      fileOut.write('0'+bin(decimal)[2:].zfill(15)+'\n')
             else:
+               str=curline
+               if '=' in str:
+                  if ';' in str:
+                     str=re.split('[=;]',str)
+                     dest=str[0].strip()
+                     comp=str[1].strip()
+                     jmp=str[2].strip()
+                  else:
+                     str=re.split('[=;]',str)
+                     dest=str[0].strip()
+                     comp=str[1].strip()
+                     jmp='000'
+               elif ';' in str:
+                  str=re.split('[=;]',str)
+                  dest='000'
+                  comp=str[0].strip()
+                  jmp=str[1].strip()
+               curline=('111'+Ccomp[comp]+Cdest[dest]+Cjmp[jmp]+'\n')
                fileOut.write(curline)
       fileIn.close()
       fileOut.close()
+
    else:
       print("You should specify at least a input file, like:")
       print('# main.py -i <inputfile.asm>')
