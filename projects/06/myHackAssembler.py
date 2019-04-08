@@ -181,20 +181,20 @@ def main(argv):
                      varBaseAddress+=1
                      decimal=hackSymbols[curline]
                      fileOut.write('0'+bin(decimal)[2:].zfill(15)+'\n')
-            else:
+            else:                                  ##C instruction
                str=curline
                if '=' in str:
-                  if ';' in str:
+                  if ';' in str:                   ##dest=comp;jmp
                      str=re.split('[=;]',str)
                      dest=str[0].strip()
                      comp=str[1].strip()
                      jmp=str[2].strip()
-                  else:
+                  else:                            ##dest=comp
                      str=re.split('[=;]',str)
                      dest=str[0].strip()
                      comp=str[1].strip()
                      jmp='000'
-               elif ';' in str:
+               elif ';' in str:                    ##comp;jmp
                   str=re.split('[=;]',str)
                   dest='000'
                   comp=str[0].strip()
