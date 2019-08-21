@@ -9,3 +9,7 @@
 00/
 demo/
 tools/
+
+# nand2tetris assembled files #
+###############################
+*.hack
